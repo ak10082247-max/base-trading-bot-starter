@@ -82,6 +82,9 @@ npm start <TOKEN_ADDRESS>
 ```
 
 ### Live Trading Mode
+
+> **⚠️ Mandatory Funding Requirement**: Your wallet needs **ETH** (for gas/swaps) AND at least **$0.50–$1.00 USDC on Base** to cover micro-fee honeypot safety checks ($0.005/check via x402). If your wallet has 0 USDC, the pre-flight gate will pause and display funding instructions before any swap is attempted.
+
 To broadcast live transactions to the Base mempool:
 1. Open `.env`
 2. Add your funded Base private key:

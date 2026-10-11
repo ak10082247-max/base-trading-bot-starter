@@ -1,6 +1,7 @@
 import chalk from "chalk";
-import { CONFIG } from "./config.js";
-import { verifyTokenSafety } from "./safety.js";
+import { privateKeyToAccount } from "viem/accounts";
+import { CONFIG, KNOWN_ADDRESSES } from "./config.js";
+import { verifyTokenSafety, checkUsdcBalance } from "./safety.js";
 import { executeSwap } from "./executor.js";
 
 async function main() {
@@ -16,6 +17,38 @@ async function main() {
   console.log(` Max Sell Tax:     ${CONFIG.maxAllowedTaxBps / 100}%`);
   console.log(` Min Liquidity:    $${CONFIG.minLiquidityUsd.toLocaleString()}`);
   console.log(` Safety Gate:      RugShield 402 (${CONFIG.rugshieldEndpoint})`);
+
+  // Pre-flight USDC balance gate for live trading wallets
+  if (CONFIG.privateKey) {
+    try {
+      const traderAccount = privateKeyToAccount(CONFIG.privateKey);
+      console.log(` Trader Wallet:    ${traderAccount.address}`);
+      console.log(chalk.cyan(`\n💳 Verifying trader USDC micro-balance on Base...`));
+      const usdcStatus = await checkUsdcBalance(traderAccount.address);
+      console.log(`   USDC Balance:   ${usdcStatus.formatted} USDC`);
+
+      if (!usdcStatus.hasEnough) {
+        console.log(chalk.bold.red(`
+╔══════════════════════════════════════════════════════════════════╗
+║ ⚠️ CRITICAL CONFIGURATION REQUIREMENT: ZERO USDC DETECTED        ║
+╚══════════════════════════════════════════════════════════════════╝
+Your trader wallet holds ${usdcStatus.formatted} USDC on Base Mainnet.
+RugShield 402 requires $0.005 USDC per on-chain pre-swap simulation.
+
+👉 ACTION REQUIRED:
+Send at least $0.50 - $1.00 USDC to your bot wallet on Base:
+Address: ${traderAccount.address}
+Asset: ${KNOWN_ADDRESSES.USDC} (USDC on Base)
+════════════════════════════════════════════════════════════════════`));
+        process.exit(1);
+      }
+      console.log(chalk.green(`   ✓ Sufficient USDC balance for automated x402 safety checks.`));
+    } catch (err: any) {
+      console.warn(chalk.yellow(`   ⚠️ Could not derive wallet address from TRADER_PRIVATE_KEY: ${err.message}`));
+    }
+  } else {
+    console.log(chalk.gray(` Mode:             Simulation / Dry-Run (No TRADER_PRIVATE_KEY detected)`));
+  }
 
   // 1. Target Token Selection (CLI arg or default safe benchmark DEGEN on Base)
   const targetToken = (

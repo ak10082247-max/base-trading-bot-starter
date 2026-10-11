@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { createWalletClient, http } from "viem";
+import { createWalletClient, createPublicClient, http, erc20Abi, Address, formatUnits } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
 import { randomBytes } from "node:crypto";
@@ -13,6 +13,36 @@ export interface SafetyCheckResult {
   reason?: string;
   report: RugShieldScanResult;
 }
+
+/**
+ * Checks if the trader's wallet on Base holds enough USDC for x402 pre-swap simulations ($0.005 USDC)
+ */
+export async function checkUsdcBalance(
+  traderAddress: Address
+): Promise<{ balance: bigint; formatted: string; hasEnough: boolean }> {
+  const publicClient = createPublicClient({
+    chain: base,
+    transport: http(CONFIG.rpcUrl),
+  });
+
+  try {
+    const balance = await publicClient.readContract({
+      address: KNOWN_ADDRESSES.USDC,
+      abi: erc20Abi,
+      functionName: "balanceOf",
+      args: [traderAddress],
+    });
+
+    const formatted = formatUnits(balance, 6);
+    const hasEnough = balance >= 5000n; // 0.005 USDC minimum
+
+    return { balance, formatted, hasEnough };
+  } catch (err: any) {
+    console.warn(chalk.yellow(`   ⚠️ Could not query USDC balance: ${err.message}`));
+    return { balance: 0n, formatted: "0.00", hasEnough: false };
+  }
+}
+
 
 /**
  * Creates EIP-712 transfer authorization header for x402 payment challenge ($0.005 USDC)
