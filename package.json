@@ -1,0 +1,42 @@
+{
+  "name": "base-trading-bot-starter",
+  "version": "1.0.0",
+  "description": "Production-ready autonomous DEX trading bot starter for Base Mainnet with built-in anti-honeypot and fee protection powered by RugShield 402.",
+  "type": "module",
+  "main": "dist/bot.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/bot.ts",
+    "dry-run": "tsx src/dry_run.ts",
+    "test:safety": "tsx src/safety.ts"
+  },
+  "keywords": [
+    "base",
+    "trading-bot",
+    "dex-sniper",
+    "aerodrome",
+    "uniswap-v3",
+    "elizaos",
+    "agentkit",
+    "honeypot-detector",
+    "x402",
+    "crypto-trading"
+  ],
+  "author": "ak10082247-max",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@kurox_real/agentkit-rugshield-402": "^1.0.0",
+    "chalk": "^5.4.1",
+    "dotenv": "^16.4.7",
+    "viem": "^2.21.57",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
