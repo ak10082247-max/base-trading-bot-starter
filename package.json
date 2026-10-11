@@ -7,6 +7,7 @@
   "scripts": {
     "build": "tsc",
     "start": "tsx src/bot.ts",
+    "start:eliza": "tsx src/bot.ts --character characters/rugshield_sniper.character.json",
     "dry-run": "tsx src/dry_run.ts",
     "test:safety": "tsx src/safety.ts"
   },

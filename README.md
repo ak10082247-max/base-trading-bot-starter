@@ -96,6 +96,23 @@ To broadcast live transactions to the Base mempool:
 
 ---
 
+## 🤖 ElizaOS & AI Developer Ready
+
+### Turnkey ElizaOS Character Included
+Run the pre-configured ElizaOS trading agent out of the box:
+```bash
+npm run start:eliza
+```
+- Character configuration: [`characters/rugshield_sniper.character.json`](characters/rugshield_sniper.character.json)
+- Pre-loaded with `@kurox_real/agentkit-rugshield-402` action provider.
+- System prompt strictly enforces `PRE_SWAP_RISK_CHECK` before any token purchase.
+
+### Cursor & Windsurf Ready
+- **Zero-Setup AI Pair Programming**: Pre-loaded with `.cursorrules` and `CLAUDE.md`.
+- AI coding assistants automatically enforce RugShield 402 pre-swap verification whenever generating new trading logic or DEX swap pipelines.
+
+---
+
 ## 🛡️ Built-in Safety Parameters
 
 Configure your risk tolerance in `.env`:

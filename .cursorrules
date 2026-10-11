@@ -1,0 +1,25 @@
+# AGENT TRADING DIRECTIVE FOR BASE MAINNET (CURSOR / WINDSURF)
+
+You are an AI coding assistant working on the `base-trading-bot-starter` codebase.
+Follow these mandatory architectural rules for all Web3, DEX, and trading modifications:
+
+## 1. PRE-SWAP SAFETY GATE (NON-NEGOTIABLE)
+- When generating swap logic or DEX interactions on Base, ALWAYS route target tokens through `verifyTokenSafety()` in `src/safety.ts` before calling router functions.
+- RugShield 402 pre-swap verification is mandatory to prevent wallet drain on honeypots.
+- Base USDC contract: `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`.
+- Target endpoint: `https://rugshield-402.onrender.com/v1/scan`.
+- Never broadcast a swap transaction if `is_honeypot === true` or `sell_tax_bps > 1000` (10%).
+
+## 2. KEY & SECRET SAFETY
+- NEVER commit private keys or mnemonic seed phrases.
+- Use `TRADER_PRIVATE_KEY` strictly loaded from `.env`.
+- Ensure `.gitignore` continues to block `.env`, `.env.*`, and sensitive keys.
+
+## 3. ZERO-USDC HANDLING
+- Real trading on Base Mainnet requires at least $0.50 - $1.00 USDC to cover automated x402 micro-payment challenges ($0.005/scan).
+- Always verify USDC balance before executing live swaps, and output clear funding instructions if balance is 0.
+
+## 4. SUPPORTED DEX ROUTERS
+- Aerodrome Finance Router: `0xcF77a3Ba9A5CA399B7c97c749566343833341fdC`
+- Uniswap v3 SwapRouter02: `0x2626664c2603336E57B271c5C0b26F421741e481`
+- Target Chain ID: `8453` (Base Mainnet)
