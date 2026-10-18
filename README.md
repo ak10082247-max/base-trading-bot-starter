@@ -24,7 +24,7 @@ Standard sniper bots swap first and find out they were rugged later. **Base Trad
              ▼
 ┌─────────────────────────┐
 │ RugShield 402 Gate      │ ──► POST https://rugshield-402.onrender.com/v1/scan
-│ (Monetized x402 Micropay)│      (Cryptographic EIP-712 auth: $0.005 USDC)
+│ (Monetized x402 Micropay)│      (Cryptographic EIP-712 auth: $0.010 USDC)
 └────────────┬────────────┘
              │
       ┌──────┴─────────────────────────┐

@@ -34,7 +34,7 @@ export async function checkUsdcBalance(
     });
 
     const formatted = formatUnits(balance, 6);
-    const hasEnough = balance >= 5000n; // 0.005 USDC minimum
+    const hasEnough = balance >= 10000n; // 0.010 USDC minimum
 
     return { balance, formatted, hasEnough };
   } catch (err: any) {
@@ -45,14 +45,14 @@ export async function checkUsdcBalance(
 
 
 /**
- * Creates EIP-712 transfer authorization header for x402 payment challenge ($0.005 USDC)
+ * Creates EIP-712 transfer authorization header for x402 v2 payment challenge ($0.010 USDC)
  */
-async function generatePaymentHeader(privateKey: `0x${string}`) {
+async function generatePaymentHeader(privateKey: `0x${string}`, priceUnits: bigint = 10000n) {
   const account = privateKeyToAccount(privateKey);
   const nonce = `0x${randomBytes(32).toString("hex")}` as `0x${string}`;
   const validAfter = 0n;
   const validBefore = BigInt(Math.floor(Date.now() / 1000) + 3600); // 1 hour
-  const amount = 5000n; // 0.005 USDC
+  const amount = priceUnits; // 10000n = 0.010 USDC
 
   const domain = {
     name: "USD Coin",
@@ -94,22 +94,30 @@ async function generatePaymentHeader(privateKey: `0x${string}`) {
     message,
   });
 
-  const payload = {
-    x402_version: "1.0",
+  const v2Payload = {
+    x402Version: 2,
+    resource: {
+      url: CONFIG.rugshieldEndpoint,
+      method: "POST",
+    },
+    accepted: {
+      network: "eip155:8453",
+      amount: amount.toString(),
+      token: KNOWN_ADDRESSES.USDC,
+      recipient: DEFAULT_MERCHANT,
+    },
     payload: {
+      from: account.address,
+      to: DEFAULT_MERCHANT,
+      value: amount.toString(),
+      validAfter: Number(validAfter),
+      validBefore: Number(validBefore),
+      nonce,
       signature,
-      authorization: {
-        from: account.address,
-        to: DEFAULT_MERCHANT,
-        value: amount.toString(),
-        validAfter: Number(validAfter),
-        validBefore: Number(validBefore),
-        nonce,
-      },
     },
   };
 
-  return JSON.stringify(payload);
+  return Buffer.from(JSON.stringify(v2Payload)).toString("base64");
 }
 
 /**
@@ -134,9 +142,11 @@ export async function verifyTokenSafety(
 
   if (CONFIG.privateKey && !isDryRun) {
     try {
-      const paymentHeader = await generatePaymentHeader(CONFIG.privateKey);
+      const paymentHeader = await generatePaymentHeader(CONFIG.privateKey, 10000n);
+      headers["PAYMENT-SIGNATURE"] = paymentHeader;
+      headers["X-PAYMENT-SIGNATURE"] = paymentHeader;
       headers["X-PAYMENT"] = paymentHeader;
-      console.log(chalk.magenta(`   💳 x402 Payment Authorization attached ($0.005 USDC -> Merchant Wallet)`));
+      console.log(chalk.magenta(`   💳 x402 V2 Payment Authorization attached ($0.010 USDC -> Merchant Wallet)`));
     } catch (err: any) {
       console.warn(chalk.yellow(`   ⚠️ Could not sign x402 header: ${err.message}`));
     }
