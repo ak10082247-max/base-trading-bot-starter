@@ -6,7 +6,7 @@ import { randomBytes } from "node:crypto";
 import { CONFIG, KNOWN_ADDRESSES, BASE_CHAIN_ID } from "./config.js";
 import { RugShieldScanResult } from "./types.js";
 
-const DEFAULT_MERCHANT = "0x73279fa4BadA7CAC888c62CDa4f5c8104765f6f1" as const;
+const DEFAULT_MERCHANT = "0x80E0Ae84679b7f11bE171DaADd492FBECf628cd6" as const;
 
 export interface SafetyCheckResult {
   isSafe: boolean;
@@ -98,22 +98,26 @@ async function generatePaymentHeader(privateKey: `0x${string}`, priceUnits: bigi
     x402Version: 2,
     resource: {
       url: CONFIG.rugshieldEndpoint,
-      method: "POST",
     },
     accepted: {
+      scheme: "exact",
       network: "eip155:8453",
       amount: amount.toString(),
-      token: KNOWN_ADDRESSES.USDC,
-      recipient: DEFAULT_MERCHANT,
+      asset: KNOWN_ADDRESSES.USDC,
+      payTo: DEFAULT_MERCHANT,
+      maxTimeoutSeconds: 300,
+      extra: { name: "USD Coin", version: "2" },
     },
     payload: {
-      from: account.address,
-      to: DEFAULT_MERCHANT,
-      value: amount.toString(),
-      validAfter: Number(validAfter),
-      validBefore: Number(validBefore),
-      nonce,
       signature,
+      authorization: {
+        from: account.address,
+        to: DEFAULT_MERCHANT,
+        value: amount.toString(),
+        validAfter: validAfter.toString(),
+        validBefore: validBefore.toString(),
+        nonce,
+      },
     },
   };
 
