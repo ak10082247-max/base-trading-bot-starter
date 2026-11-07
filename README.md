@@ -3,7 +3,7 @@
 [![Network: Base Mainnet](https://img.shields.io/badge/Network-Base%20Mainnet%20(8453)-0052FF.svg)](https://base.org)
 [![TypeScript](https://img.shields.io/badge/Language-TypeScript-3178C6.svg)](https://www.typescriptlang.org)
 [![x402 Protocol](https://img.shields.io/badge/Security-RugShield%20402-10B981.svg)](https://rugshield-402.onrender.com)
-[![npm](https://img.shields.io/badge/npm-%40kurox__real%2Fagentkit--rugshield--402-CB3837.svg)](https://www.npmjs.com/package/@kurox_real/agentkit-rugshield-402)
+[![npm](https://img.shields.io/badge/npm-elizaos--plugin--kurox--sentinel-1.0.3-CB3837.svg)](https://www.npmjs.com/package/elizaos-plugin-kurox-sentinel)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 > **Production-Ready Autonomous Trading Bot Template for Base Mainnet with Built-in Honeypot & Rug-Pull Protection (Powered by RugShield 402).**
@@ -104,7 +104,7 @@ Run the pre-configured ElizaOS trading agent out of the box:
 npm run start:eliza
 ```
 - Character configuration: [`characters/rugshield_sniper.character.json`](characters/rugshield_sniper.character.json)
-- Pre-loaded with `@kurox_real/agentkit-rugshield-402` action provider.
+- Pre-loaded with `elizaos-plugin-kurox-sentinel` action provider.
 - System prompt strictly enforces `PRE_SWAP_RISK_CHECK` before any token purchase.
 
 ### Cursor & Windsurf Ready
@@ -131,7 +131,7 @@ Configure your risk tolerance in `.env`:
 ## 📦 Powered by Official RugShield 402 Packages
 
 This template is built on top of the official RugShield ecosystem:
-- **npm Package**: [`@kurox_real/agentkit-rugshield-402`](https://www.npmjs.com/package/@kurox_real/agentkit-rugshield-402)
+- **npm Package**: [`elizaos-plugin-kurox-sentinel`](https://www.npmjs.com/package/elizaos-plugin-kurox-sentinel)
 - **Live Cloud API**: [https://rugshield-402.onrender.com](https://rugshield-402.onrender.com)
 - **Web DApp Scanner**: [https://ak10082247-max.github.io/rugshield-402/](https://ak10082247-max.github.io/rugshield-402/)
 - **Telegram Scanner**: [@RugShield402_bot](https://t.me/RugShield402_bot)
