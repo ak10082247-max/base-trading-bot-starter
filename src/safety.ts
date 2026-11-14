@@ -11,11 +11,11 @@ const DEFAULT_MERCHANT = "0x80E0Ae84679b7f11bE171DaADd492FBECf628cd6" as const;
 export interface SafetyCheckResult {
   isSafe: boolean;
   reason?: string;
-  report: RugShieldScanResult;
+  report?: RugShieldScanResult | null;
 }
 
 /**
- * Checks if the trader's wallet on Base holds enough USDC for x402 pre-swap simulations ($0.005 USDC)
+ * Checks if the trader's wallet on Base holds enough USDC for x402 pre-swap simulations ($0.010 USDC)
  */
 export async function checkUsdcBalance(
   traderAddress: Address
@@ -171,79 +171,81 @@ export async function verifyTokenSafety(
     if (res.status === 200) {
       report = (await res.json()) as RugShieldScanResult;
     } else if (res.status === 402 && isDryRun) {
-      // In dry-run mode, fall back to MCP tool simulation on cloud endpoint
-      console.log(chalk.gray(`   ℹ️ Direct 402 challenged. Querying zero-friction simulation engine...`));
-      const mcpUrl = CONFIG.rugshieldEndpoint.replace("/v1/scan", "/mcp");
-      const mcpRes = await fetch(mcpUrl, {
+      // In dry-run mode without payment, query the free public preview endpoint honestly
+      console.log(chalk.gray(`   ℹ️ Direct 402 challenged. Querying public /v1/scan/preview endpoint...`));
+      const previewUrl = CONFIG.rugshieldEndpoint.replace(/\/v1\/scan(?:\?.*)?$/, "/v1/scan/preview");
+      const previewRes = await fetch(previewUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
-          jsonrpc: "2.0",
-          id: 1,
-          method: "tools/call",
-          params: {
-            name: "rugshield_pre_swap_scan",
-            arguments: { token_address: tokenAddress, chain_id: BASE_CHAIN_ID },
-          },
+          token_address: tokenAddress,
+          chain: "base",
+          simulate_sell: true,
         }),
       });
 
-      if (mcpRes.ok) {
-        const mcpData = (await mcpRes.json()) as any;
-        const textContent = mcpData?.result?.content?.[0]?.text;
-        if (textContent) {
-          report = JSON.parse(textContent) as RugShieldScanResult;
-        }
+      if (previewRes.ok) {
+        report = (await previewRes.json()) as RugShieldScanResult;
       }
     }
   } catch (err: any) {
     console.warn(chalk.yellow(`   ⚠️ Network connection to RugShield API: ${err.message}`));
   }
 
-  // Fallback simulator for offline/mock test if remote service is unavailable
   if (!report) {
-    report = {
-      token: tokenAddress,
-      symbol: tokenAddress.toLowerCase() === "0x4ed4e862860bed51a9570b96d89af5e1b0efefed" ? "DEGEN" : "UNKNOWN",
-      name: "Simulated Token",
-      decimals: 18,
-      is_honeypot: false,
-      buy_tax_bps: 0,
-      sell_tax_bps: 0,
-      liquidity_usd: 850000,
-      risk_score: 5,
-      recommendation: "SAFE_TO_SWAP",
-      attestation: `0xsim_${Date.now()}`,
-      timestamp: Math.floor(Date.now() / 1000),
-    };
+    const reason = isDryRun
+      ? "RugShield preview endpoint unavailable; fail-closed without synthetic simulation data."
+      : "RugShield paid /v1/scan audit unavailable or returned 402 Payment Required.";
+    console.log(chalk.red.bold(`❌ [BLOCKED] ${reason}`));
+    return { isSafe: false, reason, report: null };
   }
+
+  const buyTaxLabel = typeof report.buy_tax_bps === "number" ? `${report.buy_tax_bps / 100}%` : "N/A (paid /v1/scan required)";
+  const sellTaxLabel = typeof report.sell_tax_bps === "number" ? `${report.sell_tax_bps / 100}%` : "N/A (paid /v1/scan required)";
+  const liqLabel = typeof report.liquidity_usd === "number" ? `$${report.liquidity_usd.toLocaleString()}` : "N/A (paid /v1/scan required)";
+  const riskLabel = typeof report.risk_score === "number" ? `${report.risk_score}/100` : "N/A";
+  const honeypotLabel =
+    report.is_honeypot === true
+      ? chalk.bgRed.white(" YES - FATAL ")
+      : report.is_honeypot === false
+      ? chalk.green("NO (Pass)")
+      : chalk.yellow(`UNVERIFIED (${report.simulation_status || "paid /v1/scan required"})`);
 
   // Display audit summary
   console.log(chalk.bold(`\n============= 🛡️ RUGSHIELD 402 AUDIT RECEIPT =============`));
-  console.log(` Token:          ${chalk.yellow(report.symbol || "UNKNOWN")} (${report.token})`);
-  console.log(` Honeypot Trap:  ${report.is_honeypot ? chalk.bgRed.white(" YES - FATAL ") : chalk.green("NO (Pass)")}`);
-  console.log(` Buy / Sell Tax: ${report.buy_tax_bps / 100}% / ${report.sell_tax_bps / 100}%`);
-  console.log(` Liquidity USD:  $${report.liquidity_usd.toLocaleString()}`);
-  console.log(` Risk Score:     ${report.risk_score}/100`);
-  console.log(` Verdict:        ${report.recommendation === "SAFE_TO_SWAP" ? chalk.bgGreen.black(" SAFE_TO_SWAP ") : chalk.bgRed.white(` ${report.recommendation} `)}`);
-  console.log(` Attestation:    ${chalk.gray(report.attestation.slice(0, 24) + "...")}`);
+  console.log(` Token:          ${chalk.yellow(report.symbol || "UNKNOWN")} (${report.token || tokenAddress})`);
+  console.log(` Honeypot Trap:  ${honeypotLabel}`);
+  console.log(` Buy / Sell Tax: ${buyTaxLabel} / ${sellTaxLabel}`);
+  console.log(` Liquidity USD:  ${liqLabel}`);
+  console.log(` Risk Score:     ${riskLabel}`);
+  console.log(` Verdict:        ${report.recommendation === "SAFE_TO_SWAP" ? chalk.bgGreen.black(" SAFE_TO_SWAP ") : chalk.bgRed.white(` ${report.recommendation || report.simulation_status || "UNVERIFIED"} `)}`);
+  console.log(` Attestation:    ${chalk.gray(report.attestation ? report.attestation.slice(0, 24) + "..." : "none (unpaid preview)")}`);
   console.log(chalk.bold(`===========================================================\n`));
 
-  // The 4-Layer Safety Checks
-  if (report.is_honeypot) {
-    const reason = `CRITICAL ALERT: Token is an on-chain Honeypot trap! Sell order cannot execute.`;
+  // The Fail-Closed Safety Checks
+  if (report.is_honeypot !== false) {
+    const reason =
+      report.is_honeypot === true
+        ? `CRITICAL ALERT: Token is an on-chain Honeypot trap! Sell order cannot execute.`
+        : `Honeypot simulation not verified (${report.simulation_status || "paid /v1/scan required"}). Failing closed.`;
     console.log(chalk.red.bold(`❌ [BLOCKED] ${reason}`));
     return { isSafe: false, reason, report };
   }
 
-  if (report.sell_tax_bps > CONFIG.maxAllowedTaxBps) {
-    const reason = `Excessive sell tax (${report.sell_tax_bps / 100}%). Limit is ${CONFIG.maxAllowedTaxBps / 100}%.`;
+  if (typeof report.sell_tax_bps !== "number" || report.sell_tax_bps > CONFIG.maxAllowedTaxBps) {
+    const reason =
+      typeof report.sell_tax_bps === "number"
+        ? `Excessive sell tax (${report.sell_tax_bps / 100}%). Limit is ${CONFIG.maxAllowedTaxBps / 100}%.`
+        : `Sell tax missing from report; failing closed.`;
     console.log(chalk.red.bold(`❌ [BLOCKED] ${reason}`));
     return { isSafe: false, reason, report };
   }
 
-  if (report.liquidity_usd < CONFIG.minLiquidityUsd) {
-    const reason = `Insufficient pool liquidity ($${report.liquidity_usd.toLocaleString()} < $${CONFIG.minLiquidityUsd.toLocaleString()}). High slippage risk.`;
+  if (typeof report.liquidity_usd !== "number" || report.liquidity_usd < CONFIG.minLiquidityUsd) {
+    const reason =
+      typeof report.liquidity_usd === "number"
+        ? `Insufficient pool liquidity ($${report.liquidity_usd.toLocaleString()} < $${CONFIG.minLiquidityUsd.toLocaleString()}). High slippage risk.`
+        : `Pool liquidity unverified; failing closed.`;
     console.log(chalk.red.bold(`❌ [BLOCKED] ${reason}`));
     return { isSafe: false, reason, report };
   }

@@ -31,7 +31,7 @@ BaseSniper Pro introduces a deterministic safety pipeline before broadcasting an
 ## 🛠️ Key Features
 - **Deterministic Anti-Honeypot Gate**: State-override pre-swap simulation prevents capital loss from rug-pulls.
 - **Aerodrome Router Integration**: Native Base DEX routing with optimized slippage controls.
-- **Dry-Run Mode**: Test trading strategies safely with mock trades and zero real capital risk (`npm run dry-run`).
+- **Dry-Run Mode**: Test pre-swap RugShield checks and Base RPC router connectivity safely with zero real capital risk (`npm run dry-run`).
 - **Configurable Risk Rules**: Customize max slippage, max buy/sell tax thresholds, and minimum liquidity filters in `.env`.
 - **Zero-Dependency Core**: Clean, modular TypeScript architecture with full types.
 

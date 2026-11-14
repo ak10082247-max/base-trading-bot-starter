@@ -19,7 +19,7 @@
    - Uniswap v3 Router: `0x2626664c2603336E57B271c5C0b26F421741e481`
 
 3. **Funding Checks**:
-   - Trader wallets must maintain at least $0.50 USDC on Base to cover automated x402 EIP-712 micro-payment challenges ($0.005/scan).
+   - Trader wallets must maintain at least $0.50 USDC on Base to cover automated x402 EIP-712 micro-payment challenges ($0.010/scan).
 
 4. **Common Commands**:
    - Dry run: `npm run dry-run`

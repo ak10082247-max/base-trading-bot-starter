@@ -33,7 +33,7 @@ async function main() {
 ║ ⚠️ CRITICAL CONFIGURATION REQUIREMENT: ZERO USDC DETECTED        ║
 ╚══════════════════════════════════════════════════════════════════╝
 Your trader wallet holds ${usdcStatus.formatted} USDC on Base Mainnet.
-RugShield 402 requires $0.005 USDC per on-chain pre-swap simulation.
+RugShield 402 requires $0.010 USDC per on-chain pre-swap simulation.
 
 👉 ACTION REQUIRED:
 Send at least $0.50 - $1.00 USDC to your bot wallet on Base:
@@ -73,10 +73,10 @@ Asset: ${KNOWN_ADDRESSES.USDC} (USDC on Base)
   }
 
   // 3. Swap Execution
-  console.log(chalk.green(`\n🚀 Proceeding with swap execution for ${safety.report.symbol || targetToken}...`));
+  console.log(chalk.green(`\n🚀 Proceeding with swap execution for ${safety.report?.symbol || targetToken}...`));
   const receipt = await executeSwap({
     tokenAddress: targetToken as `0x${string}`,
-    tokenSymbol: safety.report.symbol || "TOKEN",
+    tokenSymbol: safety.report?.symbol || "TOKEN",
     amountInEth: CONFIG.maxBuyAmountEth,
     isDryRun: !CONFIG.privateKey,
   });

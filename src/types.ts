@@ -1,17 +1,18 @@
 export interface RugShieldScanResult {
   token: string;
-  symbol: string;
-  name: string;
-  decimals: number;
-  is_honeypot: boolean;
-  buy_tax_bps: number;
-  sell_tax_bps: number;
-  liquidity_usd: number;
-  risk_score: number;
+  symbol?: string | null;
+  name?: string | null;
+  decimals?: number | null;
+  is_honeypot: boolean | null;
+  buy_tax_bps: number | null;
+  sell_tax_bps: number | null;
+  liquidity_usd: number | null;
+  risk_score: number | null;
   risk_factors?: string[];
-  recommendation: "SAFE_TO_SWAP" | "HIGH_RISK_BLOCK" | "CAUTION";
-  attestation: string;
-  timestamp: number;
+  simulation_status?: string;
+  recommendation?: "SAFE_TO_SWAP" | "HIGH_RISK_BLOCK" | "CAUTION" | string;
+  attestation?: string | null;
+  timestamp?: number;
 }
 
 export interface TradeConfig {

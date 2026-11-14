@@ -16,7 +16,7 @@ Follow these mandatory architectural rules for all Web3, DEX, and trading modifi
 - Ensure `.gitignore` continues to block `.env`, `.env.*`, and sensitive keys.
 
 ## 3. ZERO-USDC HANDLING
-- Real trading on Base Mainnet requires at least $0.50 - $1.00 USDC to cover automated x402 micro-payment challenges ($0.005/scan).
+- Real trading on Base Mainnet requires at least $0.50 - $1.00 USDC to cover automated x402 micro-payment challenges ($0.010/scan).
 - Always verify USDC balance before executing live swaps, and output clear funding instructions if balance is 0.
 
 ## 4. SUPPORTED DEX ROUTERS

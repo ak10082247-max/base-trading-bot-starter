@@ -66,7 +66,7 @@ You will see:
 1. Live RPC connection to Base Mainnet (`https://mainnet.base.org`).
 2. Live pre-swap honeypot audit for DEGEN token (`0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed`).
 3. Tax verification and USD liquidity checks.
-4. Simulated swap calculation with slippage tolerance.
+4. Base RPC router connectivity and slippage check.
 
 ---
 
@@ -83,7 +83,7 @@ npm start <TOKEN_ADDRESS>
 
 ### Live Trading Mode
 
-> **⚠️ Mandatory Funding Requirement**: Your wallet needs **ETH** (for gas/swaps) AND at least **$0.50–$1.00 USDC on Base** to cover micro-fee honeypot safety checks ($0.005/check via x402). If your wallet has 0 USDC, the pre-flight gate will pause and display funding instructions before any swap is attempted.
+> **⚠️ Mandatory Funding Requirement**: Your wallet needs **ETH** (for gas/swaps) AND at least **$0.50–$1.00 USDC on Base** to cover micro-fee honeypot safety checks ($0.010/check via x402). If your wallet has 0 USDC, the pre-flight gate will pause and display funding instructions before any swap is attempted.
 
 To broadcast live transactions to the Base mempool:
 1. Open `.env`

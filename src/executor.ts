@@ -51,30 +51,24 @@ export async function executeSwap(
 
   const parsedAmountIn = parseEther(amountInEth);
 
-  // Compute simulated output estimate based on current block data
-  // In dry run or test mode, generate accurate deterministic quote
-  const simulatedAmountOut = (
-    (Number(amountInEth) * 125000) /
-    (1 + CONFIG.slippageBps / 10000)
-  ).toFixed(4);
-
   const routerAddress =
     CONFIG.dex === "aerodrome"
       ? KNOWN_ADDRESSES.AERODROME_ROUTER
       : KNOWN_ADDRESSES.UNISWAP_V3_ROUTER;
 
   if (isDryRun || !CONFIG.privateKey) {
-    console.log(chalk.gray(`\n   [DRY-RUN SIMULATION] Transaction not broadcast to mempool.`));
-    console.log(chalk.gray(`   RPC Node: ${CONFIG.rpcUrl}`));
-    console.log(chalk.gray(`   Router:   ${routerAddress}`));
-    console.log(chalk.gray(`   Status:   Simulation succeeded. Zero ETH spent.`));
+    const blockNumber = await publicClient.getBlockNumber();
+    console.log(chalk.gray(`\n   [DRY-RUN VERIFICATION] Transaction not broadcast to mempool.`));
+    console.log(chalk.gray(`   RPC Node:  ${CONFIG.rpcUrl} (block #${blockNumber.toString()})`));
+    console.log(chalk.gray(`   Router:    ${routerAddress}`));
+    console.log(chalk.gray(`   Status:    Pre-flight check passed. Zero ETH spent.`));
 
     return {
       success: true,
       tokenAddress,
       symbol: tokenSymbol,
       amountInEth,
-      estimatedAmountOut: simulatedAmountOut,
+      estimatedAmountOut: `DRY_RUN_BLOCK_${blockNumber.toString()}_NOT_QUOTED`,
       slippageBps: CONFIG.slippageBps,
       router: routerAddress,
       timestamp: Math.floor(Date.now() / 1000),
@@ -141,7 +135,7 @@ export async function executeSwap(
       tokenAddress,
       symbol: tokenSymbol,
       amountInEth,
-      estimatedAmountOut: simulatedAmountOut,
+      estimatedAmountOut: `TX_SUBMITTED_${txHash}`,
       slippageBps: CONFIG.slippageBps,
       router: routerAddress,
       timestamp: Math.floor(Date.now() / 1000),

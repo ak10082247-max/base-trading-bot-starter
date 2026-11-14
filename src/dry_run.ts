@@ -23,19 +23,19 @@ async function runDryRun() {
     console.log(chalk.green(`✓ Safety Gate correctly approved safe asset.`));
     const receipt = await executeSwap({
       tokenAddress: safeToken as `0x${string}`,
-      tokenSymbol: safeAudit.report.symbol || "DEGEN",
+      tokenSymbol: safeAudit.report?.symbol || "DEGEN",
       amountInEth: CONFIG.maxBuyAmountEth,
       isDryRun: true,
     });
-    console.log(chalk.green(`✓ Simulated swap generated receipt with output estimate: ${receipt.estimatedAmountOut} ${receipt.symbol}`));
+    console.log(chalk.green(`✓ Dry-run executor check (${receipt.estimatedAmountOut}) passed for ${receipt.symbol}.`));
   } else {
     console.warn(chalk.yellow(`! Safety Gate reported: ${safeAudit.reason}`));
   }
 
-  // Test 2: Verify honeypot rejection simulation
-  console.log(chalk.bold.blue(`\n--- [TEST 2: Trap / High Risk Simulation] ---`));
+  // Test 2: Verify honeypot rejection check
+  console.log(chalk.bold.blue(`\n--- [TEST 2: High-Risk / Non-Token Address Check] ---`));
   const dummyHoneypot = "0x000000000000000000000000000000000000dead";
-  console.log(chalk.gray(`Targeting simulated malicious contract (${dummyHoneypot})...`));
+  console.log(chalk.gray(`Checking burn/non-token address (${dummyHoneypot})...`));
   
   const trapAudit = await verifyTokenSafety(dummyHoneypot, { isDryRun: true });
   console.log(chalk.cyan(`\nResult for test asset: ${trapAudit.isSafe ? "Passed" : "Blocked"}`));
